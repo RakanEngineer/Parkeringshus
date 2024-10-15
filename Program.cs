@@ -49,32 +49,8 @@ namespace Parkeringshus
 
                         DateTime arrival = DateTime.Now;
 
-                        string query = @"INSERT INTO Parking (Customer, 
-                                                              ContactDetails, 
-                                                              RegistrationNumber, 
-                                                              Description, 
-                                                              Arrival)
-                                          VALUES (@Customer, 
-                                                  @ContactDetails, 
-                                                  @RegistrationNumber, 
-                                                  @Description, 
-                                                  @Arrival)";
-
-                        SqlConnection connection = new SqlConnection(connectionString);
-                        SqlCommand command = new SqlCommand(query, connection);
-
-                        command.Parameters.AddWithValue("@Customer", customer);
-                        command.Parameters.AddWithValue("@ContactDetails", contactDetails);
-                        command.Parameters.AddWithValue("@RegistrationNumber", registrationNumber);
-                        command.Parameters.AddWithValue("@Description", description);
-                        command.Parameters.AddWithValue("@Arrival", arrival);
-
-                        connection.Open();
-
-                        command.ExecuteNonQuery();
-
-                        connection.Close();
-
+                        RegisterArrival(customer, contactDetails, registrationNumber, description, arrival);
+                        
                         Clear();
 
                         WriteLine("Parking registered");
@@ -128,6 +104,36 @@ namespace Parkeringshus
             }
 
         }
+
+        private static void RegisterArrival(string? customer, string? contactDetails, string? registrationNumber, string? description, DateTime arrival)
+        {
+            string query = @"INSERT INTO Parking (Customer, 
+                                                              ContactDetails, 
+                                                              RegistrationNumber, 
+                                                              Description, 
+                                                              Arrival)
+                                          VALUES (@Customer, 
+                                                  @ContactDetails, 
+                                                  @RegistrationNumber, 
+                                                  @Description, 
+                                                  @Arrival)";
+
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand(query, connection);
+
+            command.Parameters.AddWithValue("@Customer", customer);
+            command.Parameters.AddWithValue("@ContactDetails", contactDetails);
+            command.Parameters.AddWithValue("@RegistrationNumber", registrationNumber);
+            command.Parameters.AddWithValue("@Description", description);
+            command.Parameters.AddWithValue("@Arrival", arrival);
+
+            connection.Open();
+
+            command.ExecuteNonQuery();
+
+            connection.Close();
+        }
+
         private static void ShowParkingRegistry()
         {
             WriteLine("ID   Registration Number     Arrival                 Departure");
@@ -195,9 +201,10 @@ namespace Parkeringshus
 
             SqlCommand command = new SqlCommand(query, connection);
 
+            command.Parameters.AddWithValue("@Departure", departure);
             command.Parameters.AddWithValue("@RegistrationNumber", registrationNumber);
 
-            command.Parameters.AddWithValue("@Departure", departure);
+            
 
             connection.Open();
 
