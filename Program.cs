@@ -86,8 +86,34 @@ namespace Parkeringshus
                     case ConsoleKey.D2:
                     case ConsoleKey.NumPad2:
 
+                        {
+
+                            Write("Registration number: ");
+
+                            registrationNumber = ReadLine();
+
+                            DateTime departure = DateTime.Now;
+
+                            RegisterDeparture(registrationNumber, departure);
+                        }
+
+                        Clear();
+
+                        // TODO: Create notice snippet
+
+                        WriteLine("Departure registered");
+
+                        Thread.Sleep(2000);
+
+                        Clear();
 
 
+                        break;
+
+                    case ConsoleKey.D3:
+                    case ConsoleKey.NumPad3:
+
+                        ShowParkingRegistry();
                         break;
 
                     case ConsoleKey.D4:
@@ -102,5 +128,83 @@ namespace Parkeringshus
             }
 
         }
+        private static void ShowParkingRegistry()
+        {
+            WriteLine("ID   Registration Number     Arrival                 Departure");
+            WriteLine("---------------------------------------------------------------");
+
+            string query = @"SELECT Id
+                                              ,Customer
+                                              ,ContactDetails
+                                              ,RegistrationNumber
+                                              ,Description
+                                              ,Arrival
+                                              ,Departure
+                                              FROM Parking";
+
+            // SqlConnection är det vi använder för att upprätta (establish) anslutning till servern och databasen hanteraren.  
+            SqlConnection connection = new SqlConnection(connectionString);
+
+            // SqlCommand är det ett Objekt som represeterar det kommandot vi köra. 
+            SqlCommand command = new SqlCommand(query, connection);
+
+            connection.Open();
+
+            SqlDataReader dataReader = command.ExecuteReader();
+
+            // den Read() inne i While loopen kommer att retunera en boolen --> true eller false
+            // den  Read()--> försöker läsa en rad från databasen och om det gick och läsa, Om det fanns
+            // en rad att läsa då retunera den true och då kan vi komma åt värden i dataReader.  
+            while (dataReader.Read())
+            {
+                string id = dataReader["Id"].ToString();
+
+                string registrationNumber = dataReader["RegistrationNumber"].ToString();
+
+                string arrival = dataReader["Arrival"].ToString();
+
+                string departure = dataReader["Departure"].ToString();
+
+                Write(id.PadRight(5, ' '));
+                Write(registrationNumber.PadRight(24, ' '));
+                Write(arrival.PadRight(20, ' '));
+                WriteLine(departure);
+
+            }
+
+
+            connection.Close();
+
+            WriteLine();
+            WriteLine("<Press key to continue");
+
+            ReadKey(true);
+
+            Clear();
+        }
+
+        private static void RegisterDeparture(string registrationNumber, DateTime departure)
+        {
+            //  GETDATE() är samma som DateTime.Now.
+            string query = @"UPDATE Parking   
+                                           SET Departure = @Departure
+	                                       WHERE RegistrationNumber = @RegistrationNumber
+	                                       AND Departure IS NULL";
+
+            SqlConnection connection = new SqlConnection(connectionString);
+
+            SqlCommand command = new SqlCommand(query, connection);
+
+            command.Parameters.AddWithValue("@RegistrationNumber", registrationNumber);
+
+            command.Parameters.AddWithValue("@Departure", departure);
+
+            connection.Open();
+
+            command.ExecuteNonQuery();
+
+            connection.Close();
+        }
+
     }
 }
